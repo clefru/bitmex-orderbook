@@ -49,6 +49,7 @@ class BitMEXClient {
         client.socket = new WebSocket(client.endpoint, client.socketOptions);
       }
 
+      connectionCheck();
       client.socket.on("open", connectionCheck);
 
       client.socket.on("close", () => {
