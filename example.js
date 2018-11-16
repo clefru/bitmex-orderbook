@@ -5,12 +5,12 @@ let orderBookL2;
 let orderBook10;
 
 const main = async () => {
-  orderBookL2 = await OrderBook.open("XBTH18", {
+  orderBookL2 = await OrderBook.open("XBTUSD", {
     table: "orderBookL2",
     onUpdate: renderTables,
   });
 
-  orderBook10 = await OrderBook.open("XBTH18", {
+  orderBook10 = await OrderBook.open("XBTUSD", {
     table: "orderBook10",
     onUpdate: renderTables,
     socket: orderBookL2._client.socket, // Choose to re-use existing WebSocket.
