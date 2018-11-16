@@ -20,42 +20,43 @@ class BitMEXClient {
 
   async open() {
     return new Promise((resolve, reject) => {
-      if (!this.socket) {
-        this.socket = new WebSocket(this.endpoint, this.socketOptions);
-      }
-
+      let client = this;
       let heartbeatInterval;
 
-      this.socket.on("open", async () => {
-        debug("Connection opened");
-        this.connected = this.socket.readyState === WebSocket.OPEN;
-        heartbeatInterval = setInterval(() => this.ping(), this.heartbeat);
+      if (!client.socket) {
+        client.socket = new WebSocket(client.endpoint, client.socketOptions);
+      }
 
-        if (this.apiKey && this.apiSecret) {
+      client.socket.on("open", async () => {
+        debug("Connection opened");
+        client.connected = client.socket.readyState === WebSocket.OPEN;
+        heartbeatInterval = setInterval(() => client.ping(), client.heartbeat);
+
+        if (client.apiKey && client.apiSecret) {
           const nonce = Date.now();
           const signature = crypto
-            .createHmac("sha256", this.apiSecret)
+            .createHmac("sha256", client.apiSecret)
             .update(`GET/realtime${nonce}`)
             .digest("hex");
-          await this.sendMessage({ op: "authKey", args: [this.apiKey, nonce, signature] });
+          await client.sendMessage({ op: "authKey", args: [client.apiKey, nonce, signature] });
         }
 
-        this.subscriptions.forEach(symbol => this.subscribe(symbol));
+        client.subscriptions.forEach(symbol => client.subscribe(symbol));
         return resolve(true);
       });
 
-      this.socket.on("close", () => {
+      client.socket.on("close", () => {
         debug("Connection closed");
         clearInterval(heartbeatInterval);
-        if (!this.connected) {
-          return reject(this.lastError);
+        if (!client.connected) {
+          return reject(client.lastError);
         }
-        this.connected = false;
+        client.connected = false;
       });
 
-      this.socket.on("error", err => {
+      client.socket.on("error", err => {
         debug("Connection error:", err);
-        this.lastError = err;
+        client.lastError = err;
       });
     });
   }
