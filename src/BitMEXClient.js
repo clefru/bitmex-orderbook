@@ -23,11 +23,7 @@ class BitMEXClient {
       let client = this;
       let heartbeatInterval;
 
-      if (!client.socket) {
-        client.socket = new WebSocket(client.endpoint, client.socketOptions);
-      }
-
-      client.socket.on("open", async () => {
+      async function connectionCheck() {
         debug("Connection opened");
         client.connected = client.socket.readyState === WebSocket.OPEN;
         heartbeatInterval = setInterval(() => client.ping(), client.heartbeat);
@@ -43,7 +39,13 @@ class BitMEXClient {
 
         client.subscriptions.forEach(symbol => client.subscribe(symbol));
         return resolve(true);
-      });
+      }
+
+      if (!client.socket) {
+        client.socket = new WebSocket(client.endpoint, client.socketOptions);
+      }
+
+      client.socket.on("open", connectionCheck);
 
       client.socket.on("close", () => {
         debug("Connection closed");
