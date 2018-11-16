@@ -24,8 +24,12 @@ class BitMEXClient {
       let heartbeatInterval;
 
       async function connectionCheck() {
-        debug("Connection opened");
         client.connected = client.socket.readyState === WebSocket.OPEN;
+
+        if(!client.connected)
+            return;
+
+        debug("Connection opened");
         heartbeatInterval = setInterval(() => client.ping(), client.heartbeat);
 
         if (client.apiKey && client.apiSecret) {
